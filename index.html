@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Sag uns! - Das Kartenspiel</title>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
+    
+    :root {
+      --primary: #6c5ce7;
+      --primary-dark: #5f4fd1;
+      --accent: #00b894;
+      --accent-dark: #00a383;
+      --bg-gradient-1: #667eea;
+      --bg-gradient-2: #764ba2;
+      --danger: #ff7675;
+      --card-bg: #ffffff;
+      --text-dark: #2d3436;
+      --text-light: #636e72;
+      --shadow: rgba(0, 0, 0, 0.1);
+      --shadow-hover: rgba(0, 0, 0, 0.15);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    body {
+      font-family: 'Syne', sans-serif;
+      background: linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start; 
+      padding: 30px 20px 60px 20px;
+      position: relative;
+      overflow-x: hidden;
+      color: var(--text-dark);
+    }
+    
+    /* Background Shapes */
+    .bg-shape {
+      position: absolute;
+      border-radius: 50%;
+      z-index: 0;
+      filter: blur(60px);
+      opacity: 0.6;
+      animation: float 20s ease-in-out infinite;
+    }
+    
+    .bg-shape-1 {
+      width: 400px;
+      height: 400px;
+      background: #ff9ff3;
+      top: -100px;
+      left: -100px;
+      animation-delay: 0s;
+    }
+    
+    .bg-shape-2 {
+      width: 300px;
+      height: 300px;
+      background: #54a0ff;
+      bottom: -50px;
+      right: -50px;
+      animation-delay: 5s;
+    }
+    
+    .bg-shape-3 {
+      width: 250px;
+      height: 250px;
+      background: #feca57;
+      top: 50%;
+      right: 10%;
+      animation-delay: 10s;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(30px, -30px) rotate(5deg); }
+      66% { transform: translate(-20px, 20px) rotate(-5deg); }
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 25px;
+      z-index: 1;
+      animation: fadeInDown 0.8s ease;
+    }
+    
+    .header h1 {
+      font-size: 3rem;
+      color: white;
+      font-weight: 800;
+      text-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      margin-bottom: 5px;
+      letter-spacing: -1px;
+    }
+    
+    .header p {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1.1rem;
+      font-weight: 400;
+    }
+    
+    .container {
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 30px;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+      position: relative;
+      z-index: 1;
+      animation: fadeInUp 0.8s ease;
+      margin-bottom: 20px;
+    }
+    
+    .hidden {
+      display: none !important;
+    }
+    
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease;
+    }
+    
+    .loading-spinner {
+      border: 5px solid #f0f0f0;
+      border-top: 5px solid var(--primary);
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    
+    /* WELCOME SCREEN */
+    .welcome-screen {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    
+    .welcome-logo {
+      font-size: 5rem;
+      margin-bottom: 20px;
+      animation: bounce 2s ease-in-out infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .welcome-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-bottom: 15px;
+      letter-spacing: -1px;
+    }
+    
+    .welcome-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-light);
+      margin-bottom: 40px;
+      line-height: 1.6;
+    }
+    
+    .welcome-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    
+    .btn-welcome {
+      padding: 20px;
+      border-radius: 16px;
+      border: none;
+      font-weight: 700;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Syne', sans-serif;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-welcome::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.5s;
+    }
+    
+    .btn-welcome:hover::before {
+      left: 100%;
+    }
+    
+    .btn-welcome-icon {
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+    
+    .btn-welcome-content {
+      flex: 1;
+      text-align: left;
+    }
+    
+    .btn-welcome-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+    
+    .btn-welcome-desc {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      font-weight: 400;
+    }
+    
+    .btn-play {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
+    }
+    
+    .btn-play:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(108, 92, 231, 0.5);
+    }
+    
+    .btn-tutorial {
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: white;
+      box-shadow: 0 6px 20px rgba(0, 184, 148, 0.4);
+    }
+    
+    .btn-tutorial:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(0, 184, 148, 0.5);
+    }
+    
+    /* TUTORIAL SCREEN */
+    .tutorial-screen {
+      padding: 20px;
+    }
+    
+    .tutorial-progress {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+      position: relative;
+    }
+    
+    .tutorial-progress::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      right: 15px;
+      height: 3px;
+      background: #e0e0e0;
+      z-index: 0;
+    }
+    
+    .tutorial-progress-fill {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      height: 3px;
+      background: var(--primary);
+      z-index: 0;
+      transition: width 0.3s ease;
+    }
+    
+    .tutorial-step-indicator {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #999;
+      position: relative;
+      z-index: 1;
+      transition: all 0.3s ease;
+    }
+    
+    .tutorial-step-indicator.active {
+      background: var(--primary);
+      color: white;
+      transform: scale(1.2);
+    }
+    
+    .tutorial-step-indicator.completed {
+      background: var(--accent);
+      color: white;
+    }
+    
+    .tutorial-content {
+      min-height: 300px;
+      margin-bottom: 30px;
+    }
+    
+    .tutorial-step {
+      display: none;
+      animation: fadeInScale 0.5s ease;
+    }
+    
+    .tutorial-step.active {
+      display: block;
+    }
+    
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    .tutorial-step-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .tutorial-step-icon {
+      font-size: 2.5rem;
+    }
+    
+    .tutorial-step-description {
+      font-size: 1rem;
+      color: var(--text-light);
+      line-height: 1.8;
+      margin-bottom: 25px;
+    }
+    
+    .tutorial-demo {
+      background: #f8f9fa;
+      border-radius: 16px;
+      padding: 20px;
+      border: 2px dashed #dfe6e9;
+      margin-bottom: 20px;
+    }
+    
+    .tutorial-demo-card {
+      background: linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%);
+      color: white;
+      border-radius: 16px;
+      padding: 25px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+      box-shadow: 0 8px 20px rgba(108, 92, 231, 0.3);
+    }
+    
+    .tutorial-demo-options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    
+    .tutorial-demo-option {
+      background: white;
+      border: 2px solid #e0e0e0;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .tutorial-demo-option:hover {
+      border-color: var(--primary);
+      background: #f8f9fa;
+    }
+    
+    .tutorial-demo-option.selected {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    
+    .tutorial-tip {
+      background: #fff9e6;
+      border-left: 4px solid #feca57;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .tutorial-tip-title {
+      font-weight: 700;
+      color: #f39c12;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .tutorial-tip-text {
+      font-size: 0.9rem;
+      color: var(--text-dark);
+      line-height: 1.6;
+    }
+    
+    .tutorial-navigation {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .tutorial-navigation button {
+      flex: 1;
+      padding: 16px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Syne', sans-serif;
+    }
+    
+    .tutorial-navigation button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .btn-skip {
+      background: #dfe6e9;
+      color: var(--text-dark);
+      flex: 0.3;
+    }
+    
+    .btn-skip:hover:not(:disabled) {
+      background: #b2bec3;
+    }
+    
+    /* Setup Screen Elements */
+    .input-group {
+      margin-bottom: 20px;
+    }
+    
+    .input-group label {
+      display: block;
+      color: var(--text-dark);
+      font-weight: 700;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+    
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-family: 'Syne', sans-serif;
+      transition: all 0.3s ease;
+      background: #f8f9fa;
+      color: var(--text-dark);
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: white;
+      box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.1);
+    }
+    
+    button {
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Syne', sans-serif;
+      margin-top: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    button:active {
+      transform: scale(0.98);
+    }
+    
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+    
+    .btn-accent {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
+    }
+    
+    .btn-accent:hover:not(:disabled) {
+      background: var(--accent-dark);
+      transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+      background: #dfe6e9;
+      color: var(--text-dark);
+    }
+    
+    .btn-secondary:hover {
+      background: #b2bec3;
+    }
+    
+    .btn-danger {
+      background: #ff7675;
+      color: white;
+      margin-top: 10px;
+      font-size: 0.9rem;
+      padding: 12px;
+    }
+    
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 25px 0;
+      color: var(--text-light);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #dfe6e9;
+    }
+    
+    .divider span {
+      padding: 0 15px;
+      font-weight: 600;
+    }
+
+    /* Game Screen Elements */
+    .status-bar {
+      background: white;
+      padding: 10px 20px;
+      border-radius: 50px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      border: 1px solid #f0f0f0;
+    }
+    
+    .room-code-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .room-code {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 1px;
+      font-family: 'Space Mono', monospace;
+    }
+    
+    .copy-btn {
+      background: none;
+      border: none;
+      padding: 4px;
+      margin: 0;
+      width: auto;
+      color: var(--text-light);
+      cursor: pointer;
+      font-size: 0.9rem;
+      box-shadow: none;
+    }
+    
+    .copy-btn:hover {
+      color: var(--primary);
+      transform: none;
+    }
+    
+    .player-count {
+      background: var(--bg-gradient-1);
+      color: white;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .turn-info {
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-light);
+      margin-bottom: 20px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      border: 1px dashed #dfe6e9;
+      transition: all 0.3s ease;
+    }
+    
+    .turn-info.active {
+      color: var(--primary);
+      background: rgba(108, 92, 231, 0.1);
+      border-color: var(--primary);
+      animation: pulse 2s infinite;
+    }
+    
+    .question-card {
+      background: linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%);
+      color: white;
+      border-radius: 20px;
+      padding: 30px 20px;
+      margin: 20px 0;
+      font-size: 1.3rem;
+      font-weight: 700;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(108, 92, 231, 0.35);
+      line-height: 1.5;
+      min-height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+    
+    .question-card.new-card {
+      animation: cardEntrance 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .question-card::before {
+      content: '❝';
+      position: absolute;
+      font-size: 6rem;
+      opacity: 0.15;
+      top: -10px;
+      left: 10px;
+      font-family: serif;
+    }
+    
+    .neue-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: #ff7675;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(255, 118, 117, 0.4);
+      z-index: 10;
+    }
+    
+    /* Voting Grid */
+    .sub-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 25px;
+    }
+    
+    .sub-btn {
+      background: white;
+      border: 2px solid #e0e0e0;
+      padding: 15px 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 600;
+      color: var(--text-dark);
+      text-align: center;
+      font-size: 0.9rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+      user-select: none;
+    }
+    
+    .sub-btn:hover:not(.voted) {
+      border-color: var(--primary);
+      background: #fdfdfd;
+    }
+    
+    .sub-btn.voted {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3);
+    }
+    
+    /* Answering List */
+    .voted-list {
+      margin-bottom: 20px;
+      max-height: 250px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+    
+    .voted-item {
+      background: white;
+      border: 2px solid #f0f0f0;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    
+    .voted-item:hover {
+      border-color: #dcdcdc;
+      transform: translateX(3px);
+    }
+    
+    .voted-item.selected {
+      background: #e3f9f5;
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(0, 184, 148, 0.15);
+    }
+    
+    .voted-item.selected::after {
+      content: '💬';
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+    }
+    
+    .voted-question {
+      font-weight: 700;
+      color: var(--text-dark);
+      font-size: 1rem;
+      margin-bottom: 5px;
+      padding-right: 20px;
+    }
+    
+    .voted-by {
+      color: var(--text-light);
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    /* Utility & Messages */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(50px);
+      background: #2d3436;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      white-space: nowrap;
+      font-weight: 600;
+    }
+    
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    
+    .error-box {
+      background: #ffeaea;
+      color: #d63031;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+      text-align: center;
+      border: 1px solid #fab1a0;
+      display: none;
+      font-weight: 600;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 30px 10px;
+      color: var(--text-light);
+      font-size: 0.95rem;
+      background: #f8f9fa;
+      border-radius: 12px;
+      border: 1px dashed #dfe6e9;
+    }
+
+    /* FOOTER STYLE */
+    .footer {
+      margin-top: auto;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      z-index: 10;
+      padding-bottom: 10px;
+    }
+    
+    /* Animations */
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(108, 92, 231, 0.4); }
+      70% { box-shadow: 0 0 0 6px rgba(108, 92, 231, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(108, 92, 231, 0); }
+    }
+    
+    @keyframes cardEntrance {
+      0% { opacity: 0; transform: scale(0.9) translateY(10px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #dfe6e9; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #b2bec3; }
+    
+    /* Mobile Optimizations */
+    @media (max-width: 480px) {
+      .header h1 { font-size: 2.2rem; }
+      .welcome-title { font-size: 2rem; }
+      .welcome-logo { font-size: 4rem; }
+      .container { padding: 20px; }
+      .question-card { font-size: 1.15rem; padding: 25px 15px; }
+      .sub-grid { grid-template-columns: 1fr; }
+      .footer { font-size: 0.65rem; }
+      .btn-welcome-title { font-size: 1.1rem; }
+      .tutorial-step-title { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Shapes -->
+  <div class="bg-shape bg-shape-1"></div>
+  <div class="bg-shape bg-shape-2"></div>
+  <div class="bg-shape bg-shape-3"></div>
+
+  <!-- Loading Screen -->
+  <div id="loading" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div style="font-weight: 600; color: var(--text-dark);">Lade Spiel...</div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">Nachricht</div>
+
+  <div id="app" class="hidden">
+    <header class="header">
+      <h1>🗨️ Sag uns!</h1>
+      <p>Das Kartenspiel für eure Runde</p>
+    </header>
+
+    <!-- WELCOME SCREEN -->
+    <div id="welcome" class="container">
+      <div class="welcome-screen">
+        <div class="welcome-logo">🎴</div>
+        <h2 class="welcome-title">Willkommen!</h2>
+        <p class="welcome-subtitle">
+          Ein Spiel für tiefere Gespräche und echte Verbindungen. Wähle, wie du starten möchtest:
+        </p>
+        
+        <div class="welcome-buttons">
+          <button class="btn-welcome btn-play" onclick="skipToSetup()">
+            <div class="btn-welcome-icon">🚀</div>
+            <div class="btn-welcome-content">
+              <div class="btn-welcome-title">Direkt spielen</div>
+              <div class="btn-welcome-desc">Für erfahrene Spieler</div>
+            </div>
+          </button>
+          
+          <button class="btn-welcome btn-tutorial" onclick="startTutorial()">
+            <div class="btn-welcome-icon">📚</div>
+            <div class="btn-welcome-content">
+              <div class="btn-welcome-title">Tutorial ansehen</div>
+              <div class="btn-welcome-desc">Lerne die Spielregeln</div>
+            </div>
+          </button>
+        </div>
+        
+        <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 20px;">
+          💡 Tipp: Das Tutorial dauert nur 2 Minuten!
+        </p>
+      </div>
+    </div>
+
+    <!-- TUTORIAL SCREEN -->
+    <div id="tutorial" class="container hidden">
+      <div class="tutorial-screen">
+        <div class="tutorial-progress">
+          <div class="tutorial-progress-fill" id="tutorialProgressFill"></div>
+          <div class="tutorial-step-indicator" id="step1Indicator">1</div>
+          <div class="tutorial-step-indicator" id="step2Indicator">2</div>
+          <div class="tutorial-step-indicator" id="step3Indicator">3</div>
+          <div class="tutorial-step-indicator" id="step4Indicator">4</div>
+        </div>
+        
+        <div class="tutorial-content">
+          <!-- Step 1: Willkommen -->
+          <div class="tutorial-step active" id="tutorialStep1">
+            <h3 class="tutorial-step-title">
+              <span class="tutorial-step-icon">👋</span>
+              Wie es funktioniert
+            </h3>
+            <p class="tutorial-step-description">
+              <strong>Sag uns!</strong> ist ein Kartenspiel für 2+ Spieler. Einer von euch ist aktiv und beantwortet eine gezogene Frage. Die anderen Spieler stimmen für Folgefragen ab, die sie hören möchten.
+            </p>
+            
+            <div class="tutorial-tip">
+              <div class="tutorial-tip-title">💡 Perfekt für:</div>
+              <div class="tutorial-tip-text">
+                Abende mit Freunden, Familie oder dem Partner – um sich besser kennenzulernen und tiefere Gespräche zu führen!
+              </div>
+            </div>
+          </div>
+          
+          <!-- Step 2: Raum erstellen -->
+          <div class="tutorial-step" id="tutorialStep2">
+            <h3 class="tutorial-step-title">
+              <span class="tutorial-step-icon">🏠</span>
+              Raum erstellen
+            </h3>
+            <p class="tutorial-step-description">
+              Ein Spieler erstellt einen Raum und erhält einen <strong>4-stelligen Code</strong>. Die anderen Spieler treten mit diesem Code bei. Jeder gibt seinen Namen ein.
+            </p>
+            
+            <div class="tutorial-demo">
+              <div style="text-align: center; padding: 20px; background: white; border-radius: 12px; margin-bottom: 15px;">
+                <div style="font-size: 0.8rem; color: #999; margin-bottom: 8px;">DEIN RAUM-CODE</div>
+                <div style="font-size: 2.5rem; font-weight: 800; color: var(--primary); font-family: 'Space Mono', monospace; letter-spacing: 5px;">
+                  5941
+                </div>
+              </div>
+              <div style="text-align: center; font-size: 0.9rem; color: var(--text-light);">
+                📋 Teile diesen Code mit deinen Freunden
+              </div>
+            </div>
+          </div>
+          
+          <!-- Step 3: Spielablauf -->
+          <div class="tutorial-step" id="tutorialStep3">
+            <h3 class="tutorial-step-title">
+              <span class="tutorial-step-icon">🎮</span>
+              So wird gespielt
+            </h3>
+            <p class="tutorial-step-description">
+              <strong>1.</strong> Der aktive Spieler zieht eine Karte mit einer Frage<br>
+              <strong>2.</strong> Alle anderen stimmen für eine Folgefrage ab<br>
+              <strong>3.</strong> Der aktive Spieler wählt eine Folgefrage aus und antwortet<br>
+              <strong>4.</strong> Weiter zum nächsten Spieler!
+            </p>
+            
+            <div class="tutorial-demo">
+              <div class="tutorial-demo-card">
+                Was war der mutigste Moment deines Lebens?
+              </div>
+              <div style="text-align: center; margin-bottom: 10px; font-size: 0.85rem; color: var(--text-light); font-weight: 600;">
+                Stimme für eine Folgefrage:
+              </div>
+              <div class="tutorial-demo-options">
+                <div class="tutorial-demo-option" onclick="selectTutorialOption(this)">Wann war das?</div>
+                <div class="tutorial-demo-option" onclick="selectTutorialOption(this)">Angst gehabt?</div>
+                <div class="tutorial-demo-option" onclick="selectTutorialOption(this)">Wieder tun?</div>
+                <div class="tutorial-demo-option" onclick="selectTutorialOption(this)">Stolz darauf?</div>
+              </div>
+            </div>
+            
+            <div class="tutorial-tip">
+              <div class="tutorial-tip-title">💬 Tipp:</div>
+              <div class="tutorial-tip-text">
+                Es gibt keine falschen Antworten! Seid ehrlich und habt Spaß dabei.
+              </div>
+            </div>
+          </div>
+          
+          <!-- Step 4: Bereit! -->
+          <div class="tutorial-step" id="tutorialStep4">
+            <h3 class="tutorial-step-title">
+              <span class="tutorial-step-icon">✨</span>
+              Bereit zum Spielen!
+            </h3>
+            <p class="tutorial-step-description">
+              Das war's schon! Du bist jetzt bereit, <strong>Sag uns!</strong> zu spielen. Im nächsten Schritt kannst du einen Raum erstellen oder einem bestehenden Raum beitreten.
+            </p>
+            
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 16px; padding: 30px; text-align: center; margin: 20px 0;">
+              <div style="font-size: 3rem; margin-bottom: 15px;">🎉</div>
+              <div style="font-size: 1.3rem; font-weight: 700; margin-bottom: 10px;">Viel Spaß!</div>
+              <div style="font-size: 0.95rem; opacity: 0.9;">
+                Tiefe Gespräche warten auf euch
+              </div>
+            </div>
+            
+            <div class="tutorial-tip">
+              <div class="tutorial-tip-title">🔄 Noch Fragen?</div>
+              <div class="tutorial-tip-text">
+                Du kannst das Tutorial jederzeit erneut ansehen, indem du die Seite neu lädst.
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="tutorial-navigation">
+          <button class="btn-skip" onclick="skipToSetup()" id="skipBtn">Überspringen</button>
+          <button class="btn-secondary" onclick="previousTutorialStep()" id="prevBtn" disabled>← Zurück</button>
+          <button class="btn-primary" onclick="nextTutorialStep()" id="nextBtn">Weiter →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETUP SCREEN -->
+    <div id="setup" class="container hidden">
+      <div id="errorBox" class="error-box"></div>
+      
+      <div class="input-group">
+        <label for="userName">👤 Dein Name</label>
+        <input type="text" id="userName" placeholder="z.B. Lena" maxlength="12" autocomplete="off" />
+      </div>
+      
+      <button id="createBtn" onclick="createRoom()" class="btn-primary">
+        ✨ Raum erstellen
+      </button>
+      
+      <div class="divider">
+        <span>oder</span>
+      </div>
+      
+      <div class="input-group">
+        <label for="roomInput">🔑 Raum-Code</label>
+        <input type="number" id="roomInput" placeholder="1234" maxlength="4" />
+      </div>
+      
+      <button id="joinBtn" onclick="joinRoom()" class="btn-accent">
+        🚀 Beitreten
+      </button>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="game" class="container hidden">
+      <div class="status-bar">
+        <div class="room-code-container">
+          <span style="font-size: 0.8rem; color: #b2bec3; margin-right: 5px;">CODE</span>
+          <span class="room-code" id="roomCodeDisplay">----</span>
+          <button class="copy-btn" onclick="copyRoomCode()" title="Code kopieren">📋</button>
+        </div>
+        <div class="player-count">
+          <span>👥</span> <span id="playerCount">1</span>
+        </div>
+      </div>
+      
+      <div id="turnInfo" class="turn-info">Warte auf Start...</div>
+      
+      <!-- Main Question Area -->
+      <div id="questionCard" class="question-card">
+        <span id="questionText">Bereit!</span>
+        <div id="neueBadge" class="neue-badge hidden">NEU</div>
+      </div>
+      
+      <!-- Active Player Controls -->
+      <div id="activeControls" class="hidden">
+        <button id="drawBtn" class="btn-primary" onclick="drawNewCard()">
+          🎴 Nächste Karte ziehen
+        </button>
+        
+        <div id="answeringSection" class="hidden">
+          <div style="text-align: center; margin: 15px 0 10px; font-size: 0.9rem; color: var(--text-light); font-weight: 600;">
+            Wähle eine Frage aus, um zu antworten
+          </div>
+          <div id="votedList" class="voted-list"></div>
+
+          <button id="nextBtn" onclick="nextPlayer()" class="btn-secondary hidden">
+            ➡️ Nächster Spieler
+          </button>
+        </div>
+      </div>
+
+      <!-- Other Players Controls -->
+      <div id="votingControls" class="hidden">
+        <div style="text-align: center; margin: 15px 0 10px; font-size: 0.9rem; color: var(--text-light); font-weight: 600;">
+          📝 Stimme für eine Folgefrage ab
+        </div>
+        <div id="subGrid" class="sub-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    designed by AGOGO Marzouk × powered by AI
+  </footer>
+
+  <!-- Questions externes -->
+  <script src="questions.js"></script>
+
+  <!-- Firebase & Game Logic -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getDatabase, ref, set, update, onValue, get, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+    // --- CONFIGURATION ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyB-80dSuUiGSK99flAzyO8cGKIUfgzT8YU",
+      authDomain: "sag-uns.firebaseapp.com",
+      databaseURL: "https://sag-uns-default-rtdb.firebaseio.com",
+      projectId: "sag-uns",
+      storageBucket: "sag-uns.firebasestorage.app",
+      messagingSenderId: "336076042001",
+      appId: "1:336076042001:web:3f14385ba00975b66a26b0"
+    };
+
+    // --- STATE & DATA ---
+    let app, database;
+    let gameId, myName, isHost = false;
+    let players = [];
+    let currentTurnIndex = 0;
+    
+    let seenQuestions = new Set();
+    let isGenerating = false;
+    let lastCardQuestion = "";
+    let isVoting = false;
+
+    // Tutorial state
+    let currentTutorialStep = 1;
+    const totalTutorialSteps = 4;
+
+    // Les questions sont chargées depuis questions.js
+    // Vérifier que le fichier est bien chargé
+    if (typeof allQuestions === 'undefined') {
+      console.error('ERREUR: questions.js n\'est pas chargé!');
+      alert('Erreur: Le fichier questions.js est manquant. Veuillez vous assurer qu\'il est dans le même dossier que ce fichier HTML.');
+    } else {
+      console.log(`✅ ${allQuestions.length} questions chargées depuis questions.js`);
+    }
+
+    // --- UTILS ---
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function showError(msg) {
+      const box = document.getElementById('errorBox');
+      box.innerText = msg;
+      box.style.display = 'block';
+      setTimeout(() => { box.style.display = 'none'; }, 4000);
+    }
+
+    // --- TUTORIAL FUNCTIONS ---
+    window.startTutorial = function() {
+      document.getElementById('welcome').classList.add('hidden');
+      document.getElementById('tutorial').classList.remove('hidden');
+      currentTutorialStep = 1;
+      updateTutorialUI();
+    };
+
+    window.skipToSetup = function() {
+      document.getElementById('welcome').classList.add('hidden');
+      document.getElementById('tutorial').classList.add('hidden');
+      document.getElementById('setup').classList.remove('hidden');
+    };
+
+    window.nextTutorialStep = function() {
+      if (currentTutorialStep < totalTutorialSteps) {
+        currentTutorialStep++;
+        updateTutorialUI();
+      } else {
+        // Tutorial finished, go to setup
+        skipToSetup();
+      }
+    };
+
+    window.previousTutorialStep = function() {
+      if (currentTutorialStep > 1) {
+        currentTutorialStep--;
+        updateTutorialUI();
+      }
+    };
+
+    window.selectTutorialOption = function(element) {
+      // Remove selection from all options
+      const options = document.querySelectorAll('.tutorial-demo-option');
+      options.forEach(opt => opt.classList.remove('selected'));
+      
+      // Add selection to clicked option
+      element.classList.add('selected');
+      
+      showToast('Gut gemacht! 👍');
+    };
+
+    function updateTutorialUI() {
+      // Update step visibility
+      for (let i = 1; i <= totalTutorialSteps; i++) {
+        const stepElement = document.getElementById(`tutorialStep${i}`);
+        const indicatorElement = document.getElementById(`step${i}Indicator`);
+        
+        if (i === currentTutorialStep) {
+          stepElement.classList.add('active');
+          indicatorElement.classList.add('active');
+          indicatorElement.classList.remove('completed');
+        } else {
+          stepElement.classList.remove('active');
+          indicatorElement.classList.remove('active');
+          
+          if (i < currentTutorialStep) {
+            indicatorElement.classList.add('completed');
+            indicatorElement.innerHTML = '✓';
+          } else {
+            indicatorElement.classList.remove('completed');
+            indicatorElement.innerHTML = i;
+          }
+        }
+      }
+      
+      // Update progress bar
+      const progressPercent = ((currentTutorialStep - 1) / (totalTutorialSteps - 1)) * 100;
+      const progressFill = document.getElementById('tutorialProgressFill');
+      const progressBarWidth = document.querySelector('.tutorial-progress').offsetWidth - 30;
+      progressFill.style.width = (progressBarWidth * progressPercent / 100) + 'px';
+      
+      // Update buttons
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      
+      prevBtn.disabled = currentTutorialStep === 1;
+      
+      if (currentTutorialStep === totalTutorialSteps) {
+        nextBtn.innerHTML = 'Los geht\'s! 🚀';
+        nextBtn.classList.remove('btn-primary');
+        nextBtn.classList.add('btn-accent');
+      } else {
+        nextBtn.innerHTML = 'Weiter →';
+        nextBtn.classList.add('btn-primary');
+        nextBtn.classList.remove('btn-accent');
+      }
+    }
+
+    // --- FIREBASE INIT ---
+    try {
+      app = initializeApp(firebaseConfig);
+      database = getDatabase(app);
+      
+      document.getElementById('loading').style.opacity = '0';
+      setTimeout(() => {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+      }, 500);
+      
+    } catch (error) {
+      console.error("Firebase Error:", error);
+      document.getElementById('loading').innerHTML = `
+        <div style="color: #d63031; text-align: center; padding: 20px;">
+          <h3>Verbindungsfehler</h3>
+          <p>Bitte überprüfe deine Internetverbindung.</p>
+          <button onclick="location.reload()" style="margin-top:20px; padding:10px 20px; border-radius:8px; border:none; background:var(--primary); color:white;">Neustart</button>
+        </div>
+      `;
+    }
+
+    // --- GAME LOGIC ---
+
+    window.createRoom = async function() {
+      const nameInput = document.getElementById('userName');
+      myName = nameInput.value.trim();
+      
+      if(!myName) {
+        showError("Bitte gib deinen Namen ein!");
+        nameInput.focus();
+        return;
+      }
+      
+      gameId = Math.floor(1000 + Math.random() * 9000).toString();
+      isHost = true;
+      
+      try {
+        await set(ref(database, 'rooms/' + gameId), {
+          players: [myName],
+          currentTurnIndex: 0,
+          currentCard: { 
+            q: "Willkommen! " + myName + ", ziehe die erste Karte.", 
+            sub: [], 
+            isNew: false 
+          },
+          votedSubs: {}, 
+          activeSubReply: -1,
+          createdAt: serverTimestamp(),
+          lastUpdate: Date.now()
+        });
+        
+        switchScreen('game');
+        listenToRoom();
+      } catch (error) {
+        console.error(error);
+        showError("Fehler beim Erstellen des Raums.");
+      }
+    };
+
+    window.joinRoom = async function() {
+      const nameInput = document.getElementById('userName');
+      myName = nameInput.value.trim();
+      const codeInput = document.getElementById('roomInput');
+      gameId = codeInput.value.trim();
+      
+      if(!myName) {
+        showError("Bitte gib deinen Namen ein!");
+        return;
+      }
+      if(!gameId || gameId.length !== 4) {
+        showError("Bitte gib einen gültigen 4-stelligen Code ein.");
+        return;
+      }
+      
+      try {
+        const roomRef = ref(database, 'rooms/' + gameId);
+        const snapshot = await get(roomRef);
+        
+        if(snapshot.exists()) {
+          let playersList = snapshot.val().players || [];
+          
+          if(playersList.includes(myName)) {
+            showError("Dieser Name ist bereits vergeben!");
+            return;
+          }
+          
+          playersList.push(myName);
+          await update(roomRef, { 
+            players: playersList,
+            lastUpdate: Date.now()
+          });
+          isHost = false;
+          switchScreen('game');
+          listenToRoom();
+        } else {
+          showError("Raum nicht gefunden. Überprüfe den Code.");
+        }
+      } catch (error) {
+        console.error(error);
+        showError("Fehler beim Beitreten.");
+      }
+    };
+
+    function switchScreen(screenName) {
+      if(screenName === 'game') {
+        document.getElementById('setup').classList.add('hidden');
+        document.getElementById('game').classList.remove('hidden');
+        document.getElementById('roomCodeDisplay').innerText = gameId;
+      }
+    }
+
+    function getUniqueCard() {
+      const unseen = allQuestions.filter(q => !seenQuestions.has(q.q));
+      
+      if(unseen.length === 0) {
+        seenQuestions.clear();
+        unseen.push(...allQuestions);
+      }
+      
+      const card = unseen[Math.floor(Math.random() * unseen.length)];
+      seenQuestions.add(card.q);
+      
+      return { ...card, isNew: true }; 
+    }
+
+    window.drawNewCard = async function() {
+      if(isGenerating) {
+        console.log("⏳ Already generating, skipping...");
+        return;
+      }
+      
+      isGenerating = true;
+      
+      const btn = document.getElementById('drawBtn');
+      const originalText = btn ? btn.innerText : "";
+      
+      if(btn) { 
+        btn.disabled = true; 
+        btn.innerText = "Lädt..."; 
+      }
+      
+      try {
+        const newCard = getUniqueCard();
+        
+        await update(ref(database, 'rooms/' + gameId), {
+          currentCard: newCard,
+          votedSubs: {},
+          activeSubReply: -1,
+          lastUpdate: Date.now()
+        });
+        
+        lastCardQuestion = newCard.q;
+        showToast("Neue Karte gezogen!");
+        
+        console.log("✅ Card drawn successfully:", newCard.q.substring(0, 50) + "...");
+        
+      } catch (error) {
+        console.error("❌ Error drawing card:", error);
+        showError("Fehler beim Laden der Karte.");
+      } finally {
+        setTimeout(() => {
+          if(btn) { 
+            btn.disabled = false; 
+            btn.innerText = originalText || "🎴 Nächste Karte ziehen"; 
+          }
+          isGenerating = false;
+        }, 1000);
+      }
+    };
+
+    window.voteSub = async function(index) {
+      if(isVoting) {
+        console.log("⏳ Already voting, skipping...");
+        return;
+      }
+      
+      isVoting = true;
+      
+      try {
+        await update(ref(database, 'rooms/' + gameId), {
+          [`votedSubs/${myName}`]: index,
+          lastUpdate: Date.now()
+        });
+        
+        showToast("Stimme abgegeben!");
+        console.log("✅ Vote recorded:", index);
+        
+      } catch (error) {
+        console.error("❌ Voting error:", error);
+        showError("Fehler beim Abstimmen.");
+      } finally {
+        setTimeout(() => {
+          isVoting = false;
+        }, 500);
+      }
+    };
+
+    window.selectReply = async function(index) {
+      try {
+        await update(ref(database, 'rooms/' + gameId), {
+          activeSubReply: index,
+          lastUpdate: Date.now()
+        });
+        
+        showToast("Frage ausgewählt!");
+        console.log("✅ Reply selected:", index);
+        
+      } catch (error) {
+        console.error("❌ Selection error:", error);
+      }
+    };
+
+    window.nextPlayer = async function() {
+      try {
+        const roomRef = ref(database, 'rooms/' + gameId);
+        const snapshot = await get(roomRef);
+        
+        if (!snapshot.exists()) {
+          showError("Raum nicht gefunden.");
+          return;
+        }
+
+        const data = snapshot.val();
+        const currentTurnIndex = data.currentTurnIndex || 0;
+        const playersList = data.players || [];
+        
+        const nextIdx = (currentTurnIndex + 1) % playersList.length;
+        const nextPlayerName = playersList[nextIdx] || "Spieler " + (nextIdx + 1);
+
+        await update(ref(database, 'rooms/' + gameId), {
+          currentTurnIndex: nextIdx,
+          votedSubs: {},
+          activeSubReply: -1,
+          currentCard: { 
+            q: nextPlayerName + " ist dran!", 
+            sub: [],
+            isNew: false 
+          },
+          lastUpdate: Date.now()
+        });
+        
+        lastCardQuestion = "";
+        
+        showToast("Nächster Spieler: " + nextPlayerName);
+        console.log("✅ Next player:", nextPlayerName, "Turn:", nextIdx);
+        
+      } catch (error) {
+        console.error("❌ Fehler beim Spielerwechsel:", error);
+        showError("Fehler beim Wechseln");
+      }
+    };
+
+    window.copyRoomCode = function() {
+      navigator.clipboard.writeText(gameId).then(() => {
+        showToast("Code kopiert!");
+      }).catch(err => {
+        console.error("Copy error:", err);
+        showToast("Fehler beim Kopieren");
+      });
+    };
+
+    function listenToRoom() {
+      const roomRef = ref(database, 'rooms/' + gameId);
+      
+      onValue(roomRef, (snapshot) => {
+        const data = snapshot.val();
+        if(!data) {
+          alert("Der Raum wurde geschlossen.");
+          location.reload();
+          return;
+        }
+        
+        players = data.players || [];
+        currentTurnIndex = data.currentTurnIndex || 0;
+        const activePlayer = players[currentTurnIndex];
+        const isMyTurn = (activePlayer === myName);
+
+        document.getElementById('playerCount').innerText = players.length;
+        
+        const turnInfo = document.getElementById('turnInfo');
+        if(isMyTurn) {
+          turnInfo.innerText = "🎯 Du bist dran!";
+          turnInfo.classList.add('active');
+        } else {
+          turnInfo.innerText = "🎤 " + activePlayer + " antwortet...";
+          turnInfo.classList.remove('active');
+        }
+
+        const card = data.currentCard || { q: "Lade...", sub: [], isNew: false };
+        const qText = document.getElementById('questionText');
+        const badge = document.getElementById('neueBadge');
+        const qCard = document.getElementById('questionCard');
+        
+        if(lastCardQuestion !== card.q && card.q !== "") {
+          qText.innerText = card.q;
+          lastCardQuestion = card.q;
+          
+          qCard.classList.remove('new-card');
+          void qCard.offsetWidth;
+          
+          if(card.isNew && card.sub && card.sub.length > 0) {
+            setTimeout(() => {
+              qCard.classList.add('new-card');
+            }, 10);
+          }
+        }
+        
+        badge.classList.toggle('hidden', !card.isNew);
+
+        const activeControls = document.getElementById('activeControls');
+        const votingControls = document.getElementById('votingControls');
+        const drawBtn = document.getElementById('drawBtn');
+        const answeringSection = document.getElementById('answeringSection');
+        const nextBtn = document.getElementById('nextBtn');
+
+        if(isMyTurn) {
+          activeControls.classList.remove('hidden');
+          votingControls.classList.add('hidden');
+          
+          const hasQuestions = card.sub && card.sub.length > 0;
+          
+          if(!hasQuestions) {
+            drawBtn.classList.remove('hidden');
+            answeringSection.classList.add('hidden');
+            console.log("📊 State: Waiting for card draw");
+          } else {
+            drawBtn.classList.add('hidden');
+            answeringSection.classList.remove('hidden');
+            
+            const hasVotes = data.votedSubs && Object.keys(data.votedSubs).length > 0;
+            const hasReply = data.activeSubReply !== -1;
+            
+            renderAnsweringList(card.sub, data.votedSubs || {}, data.activeSubReply);
+            nextBtn.classList.toggle('hidden', !hasReply);
+            
+            console.log("📊 State: Answering phase - Votes:", hasVotes, "Reply:", hasReply);
+          }
+          
+        } else {
+          activeControls.classList.add('hidden');
+          votingControls.classList.remove('hidden');
+          renderVotingGrid(card.sub, data.votedSubs || {});
+        }
+      }, (error) => {
+        console.error("❌ Firebase onValue error:", error);
+        showError("Verbindungsfehler. Bitte neu laden.");
+      });
+    }
+
+    function renderVotingGrid(subs, votes) {
+      const grid = document.getElementById('subGrid');
+      grid.innerHTML = "";
+      
+      if(!subs || subs.length === 0) {
+        grid.innerHTML = `<div class="empty-state">Warte, bis ${players[currentTurnIndex] || "der Spieler"} eine Karte zieht...</div>`;
+        return;
+      }
+      
+      const myVote = votes[myName]; 
+
+      subs.forEach((text, index) => {
+        const btn = document.createElement("div");
+        const isSelected = (myVote === index);
+        
+        btn.className = "sub-btn" + (isSelected ? " voted" : "");
+        btn.innerText = text;
+        
+        btn.onclick = () => {
+          if(!isVoting) {
+            voteSub(index);
+          }
+        };
+        
+        grid.appendChild(btn);
+      });
+    }
+
+    function renderAnsweringList(subs, votes, activeIndex) {
+      const list = document.getElementById('votedList');
+      list.innerHTML = "";
+      
+      if(!votes || Object.keys(votes).length === 0) {
+        list.innerHTML = `<div class="empty-state">Warte auf Stimmen der anderen...</div>`;
+        return;
+      }
+      
+      const voteCounts = {};
+      const voterNames = {}; 
+      
+      for(const [voter, idx] of Object.entries(votes)) {
+        voteCounts[idx] = (voteCounts[idx] || 0) + 1;
+        if(!voterNames[idx]) voterNames[idx] = [];
+        voterNames[idx].push(voter);
+      }
+      
+      const sortedIndices = Object.keys(voteCounts)
+        .map(idx => parseInt(idx))
+        .sort((a, b) => voteCounts[b] - voteCounts[a]);
+      
+      sortedIndices.forEach((index) => {
+        if(voteCounts[index] && subs[index]) {
+          const div = document.createElement("div");
+          const isSelected = (activeIndex === index);
+          
+          div.className = "voted-item" + (isSelected ? " selected" : "");
+          
+          div.innerHTML = `
+            <div class="voted-question">${subs[index]}</div>
+            <div class="voted-by">🗳️ ${voteCounts[index]} Stimme${voteCounts[index]>1?'n':''} (${voterNames[index].join(', ')})</div>
+          `;
+          
+          div.onclick = () => selectReply(index);
+          list.appendChild(div);
+        }
+      });
+    }
+
+    console.log("%c🎮 Sag uns! Game Loaded", "color: #6c5ce7; font-size: 16px; font-weight: bold;");
+    console.log("%c✨ With interactive tutorial & welcome screen!", "color: #00b894; font-size: 14px;");
+  </script>
+</body>
+</html>
